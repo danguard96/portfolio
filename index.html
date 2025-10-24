@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Daniel Peña - Graphics Engineer</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+   <style>
+       :root {
+           --primary-electric: #00d4ff;
+           --primary-neon: #ff6b35;
+           --primary-matrix: #39ff14;
+           --bg-darker: #050505;
+           --text-primary: #ffffff;
+       }
+
+       * {
+           box-sizing: border-box;
+       }
+
+       body {
+           font-family: 'Exo 2', sans-serif;
+           background: var(--bg-darker);
+           color: var(--text-primary);
+           margin: 0;
+           overflow-x: hidden;
+           scroll-behavior: smooth;
+       }
+
+       .mono {
+           font-family: 'Orbitron', monospace;
+           font-weight: 700;
+       }
+
+       /* Enhanced Background */
+       .cyber-bg {
+           background: linear-gradient(135deg, #0c0c0c 0%, #1a0a1a 25%, #0a1a0a 50%, #1a1a0a 75%, #0c0c0c 100%);
+           position: relative;
+       }
+
+       .cyber-bg::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           background: 
+               radial-gradient(circle at 20% 30%, rgba(0,212,255,0.15) 0%, transparent 50%),
+               radial-gradient(circle at 80% 70%, rgba(255,107,53,0.12) 0%, transparent 50%),
+               radial-gradient(circle at 50% 50%, rgba(57,255,20,0.08) 0%, transparent 60%);
+           pointer-events: none;
+       }
+
+       /* Neon effects */
+       .neon-cyan { 
+           color: var(--primary-electric); 
+           text-shadow: 0 0 10px var(--primary-electric), 0 0 20px var(--primary-electric), 0 0 40px var(--primary-electric);
+       }
+       .neon-magenta { 
+           color: var(--primary-neon); 
+           text-shadow: 0 0 10px var(--primary-neon), 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon);
+       }
+       .neon-green { 
+           color: var(--primary-matrix); 
+           text-shadow: 0 0 10px var(--primary-matrix), 0 0 20px var(--primary-matrix), 0 0 30px var(--primary-matrix);
+       }
+
+       /* Enhanced cards */
+       .project-card {
+           background: var(--bg-card);
+           border: 1px solid rgba(0,212,255,0.3);
+           border-radius: 12px;
+           overflow: hidden;
+           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+           position: relative;
+           box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+       }
+
+       .project-card::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           background: linear-gradient(45deg, transparent, rgba(0,212,255,0.08), transparent);
+           opacity: 0;
+           transition: opacity 0.3s ease;
+           pointer-events: none;
+       }
+
+       .project-card:hover {
+           transform: translateY(-8px) rotateX(2deg);
+           box-shadow: 
+               0 20px 40px rgba(0,212,255,0.2),
+               0 0 0 1px rgba(0,212,255,0.4),
+               inset 0 0 20px rgba(255,107,53,0.1);
+           border-color: var(--primary-electric);
+       }
+
+       .project-card:hover::before {
+           opacity: 1;
+       }
+
+       /* Terminal Interface Styles */
+       .terminal-window {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 2px solid var(--primary-electric);
+           border-radius: 12px;
+           box-shadow: 
+               0 0 30px rgba(0, 212, 255, 0.3),
+               inset 0 1px 0 rgba(255, 255, 255, 0.1);
+           overflow: hidden;
+       }
+       
+       .terminal-header {
+           background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+           padding: 12px 16px;
+           border-bottom: 1px solid var(--primary-electric);
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+       }
+       
+       .terminal-buttons {
+           display: flex;
+           gap: 8px;
+       }
+       
+       .terminal-btn {
+           width: 12px;
+           height: 12px;
+           border-radius: 50%;
+           cursor: pointer;
+       }
+       
+       .terminal-btn.close { background: #ff5f56; }
+       .terminal-btn.minimize { background: #ffbd2e; }
+       .terminal-btn.maximize { background: #27ca3f; }
+       
+       .terminal-title {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 14px;
+           font-weight: 600;
+       }
+       
+       .terminal-content {
+           padding: 24px;
+           font-family: 'Orbitron', monospace;
+           font-size: 14px;
+           line-height: 1.6;
+           min-height: 400px;
+       }
+       
+       .terminal-line {
+           margin-bottom: 8px;
+           display: flex;
+           align-items: center;
+       }
+       
+       .prompt {
+           color: var(--primary-matrix);
+           margin-right: 8px;
+           font-weight: 600;
+       }
+       
+       .command {
+           color: var(--primary-electric);
+           font-weight: 500;
+       }
+       
+       .terminal-output {
+           margin-left: 0;
+           margin-bottom: 16px;
+       }
+       
+       .output-line {
+           color: #e0e0e0;
+           margin-bottom: 4px;
+           padding-left: 0;
+       }
+       
+       .skill-item {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 4px;
+           padding: 2px 0;
+       }
+       
+       .skill-name {
+           color: #e0e0e0;
+           font-weight: 500;
+       }
+       
+       .skill-level {
+           color: var(--primary-matrix);
+           font-weight: 600;
+           font-family: monospace;
+       }
+       
+       .current-line {
+           margin-top: 16px;
+       }
+       
+       .cursor-blink {
+           color: var(--primary-electric);
+           animation: blink 1s infinite;
+       }
+       
+       .terminal-actions {
+           padding: 24px;
+           border-top: 1px solid rgba(0, 212, 255, 0.2);
+           display: flex;
+           gap: 16px;
+           justify-content: center;
+       }
+       
+       .terminal-btn-action {
+           background: linear-gradient(45deg, var(--primary-electric), var(--primary-neon));
+           border: none;
+           border-radius: 8px;
+           padding: 12px 24px;
+           color: #000;
+           font-family: 'Orbitron', monospace;
+           font-weight: 700;
+           font-size: 14px;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           gap: 8px;
+           transition: all 0.3s ease;
+           box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+       }
+       
+       .terminal-btn-action:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+       }
+       
+       .terminal-btn-action.secondary {
+           background: linear-gradient(45deg, #333, #555);
+           color: var(--primary-electric);
+           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+       }
+       
+       .terminal-btn-action.secondary:hover {
+           box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
+       }
+       
+       .btn-icon {
+           font-size: 16px;
+       }
+       
+       .btn-text {
+           letter-spacing: 1px;
+       }
+       
+       /* Typing Animation for Terminal */
+       .typing-text {
+           overflow: hidden;
+           white-space: nowrap;
+           border-right: 2px solid var(--primary-electric);
+           animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+       }
+       
+       @keyframes blink-caret {
+           from, to { border-color: transparent; }
+           50% { border-color: var(--primary-electric); }
+       }
+
+       /* Terminal Navigation Styles */
+       .terminal-prompt {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 14px;
+           font-weight: 600;
+       }
+       
+       .nav-command {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 14px;
+           font-weight: 500;
+           animation: blink 1s infinite;
+       }
+       
+       .nav-link {
+           display: flex;
+           align-items: center;
+           gap: 8px;
+           padding: 8px 16px;
+           border-radius: 6px;
+           background: rgba(0, 0, 0, 0.3);
+           border: 1px solid transparent;
+           transition: all 0.3s ease;
+           text-decoration: none;
+           color: #e0e0e0;
+           font-family: 'Orbitron', monospace;
+           font-size: 12px;
+           font-weight: 600;
+           letter-spacing: 1px;
+       }
+       
+       .nav-link:hover {
+           background: rgba(0, 212, 255, 0.1);
+           border-color: var(--primary-electric);
+           color: var(--primary-electric);
+           transform: translateY(-2px);
+           box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+       }
+       
+       .nav-icon {
+           font-size: 16px;
+       }
+       
+       .nav-text {
+           font-size: 11px;
+       }
+       
+       .terminal-btn-mobile {
+           display: flex;
+           flex-direction: column;
+           gap: 4px;
+           background: none;
+           border: none;
+           cursor: pointer;
+           padding: 8px;
+       }
+       
+       .btn-line {
+           width: 20px;
+           height: 2px;
+           background: var(--primary-electric);
+           transition: all 0.3s ease;
+       }
+       
+       .terminal-btn-mobile:hover .btn-line {
+           background: var(--primary-matrix);
+       }
+
+       /* Terminal Section Styles */
+       .terminal-section {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 2px solid var(--primary-electric);
+           border-radius: 12px;
+           box-shadow: 
+               0 0 30px rgba(0, 212, 255, 0.3),
+               inset 0 1px 0 rgba(255, 255, 255, 0.1);
+           overflow: hidden;
+           margin-bottom: 2rem;
+       }
+       
+       .terminal-header-small {
+           background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+           padding: 8px 12px;
+           border-bottom: 1px solid var(--primary-electric);
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+       }
+       
+       .terminal-content-small {
+           padding: 16px;
+           font-family: 'Orbitron', monospace;
+           font-size: 12px;
+           line-height: 1.4;
+       }
+       
+       /* Masonry Layout */
+       .masonry {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+           gap: 2rem;
+           margin-top: 2rem;
+       }
+       
+       .masonry .project-card {
+           break-inside: avoid;
+           margin-bottom: 2rem;
+       }
+       
+       /* Terminal Project Cards */
+       .terminal-project-card {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 1px solid var(--primary-electric);
+           border-radius: 8px;
+           position: relative;
+           overflow: hidden;
+       }
+       
+       .terminal-project-card::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           height: 2px;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon), var(--primary-matrix));
+       }
+       
+       .terminal-project-card h3 {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 1.2rem;
+           margin-bottom: 1rem;
+           text-transform: uppercase;
+           letter-spacing: 1px;
+       }
+       
+       .terminal-project-card p {
+           color: #e0e0e0;
+           line-height: 1.6;
+           margin-bottom: 1rem;
+       }
+       
+       .terminal-project-card .tech-stack {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 8px;
+           margin-top: 1rem;
+       }
+       
+       .terminal-project-card .tech-tag {
+           background: rgba(0, 212, 255, 0.1);
+           border: 1px solid var(--primary-electric);
+           color: var(--primary-electric);
+           padding: 4px 8px;
+           border-radius: 4px;
+           font-size: 0.75rem;
+           font-family: 'Orbitron', monospace;
+           font-weight: 600;
+       }
+       
+       /* Skills Grid */
+       .skills-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+           gap: 1.5rem;
+           margin-top: 2rem;
+       }
+       
+       /* Skill Terminal Cards */
+       .skill-terminal-card {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 1px solid var(--primary-electric);
+           border-radius: 8px;
+           overflow: hidden;
+           position: relative;
+       }
+       
+       .skill-terminal-card::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           height: 2px;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon), var(--primary-matrix));
+       }
+       
+       .skill-header {
+           background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+           padding: 12px 16px;
+           border-bottom: 1px solid var(--primary-electric);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           min-height: 48px;
+           flex-wrap: nowrap;
+       }
+       
+       .skill-category {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.9rem;
+           font-weight: 700;
+           letter-spacing: 1px;
+           flex: 1;
+           white-space: nowrap;
+           overflow: hidden;
+           text-overflow: ellipsis;
+       }
+       
+       .skill-status {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.75rem;
+           font-weight: 600;
+           background: rgba(57, 255, 20, 0.1);
+           padding: 2px 8px;
+           border-radius: 4px;
+           border: 1px solid var(--primary-matrix);
+       }
+       
+       .skill-content {
+           padding: 16px;
+       }
+       
+       .skill-item {
+           margin-bottom: 16px;
+       }
+       
+       .skill-item:last-child {
+           margin-bottom: 0;
+       }
+       
+       .skill-name {
+           color: #e0e0e0;
+           font-family: 'Orbitron', monospace;
+           font-size: 0.9rem;
+           font-weight: 600;
+           margin-bottom: 8px;
+       }
+       
+       .skill-progress {
+           display: flex;
+           align-items: center;
+           gap: 12px;
+       }
+       
+       .progress-bar {
+           flex: 1;
+           height: 8px;
+           background: rgba(0, 0, 0, 0.5);
+           border: 1px solid var(--primary-electric);
+           border-radius: 4px;
+           overflow: hidden;
+           position: relative;
+       }
+       
+       .progress-fill {
+           height: 100%;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon));
+           border-radius: 3px;
+           transition: width 1s ease-in-out;
+           position: relative;
+       }
+       
+       .progress-fill::after {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+           animation: progress-shine 2s infinite;
+       }
+       
+       @keyframes progress-shine {
+           0% { transform: translateX(-100%); }
+           100% { transform: translateX(100%); }
+       }
+       
+       .skill-percentage {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 700;
+           min-width: 35px;
+           text-align: right;
+       }
+       
+       /* Contact Terminal Styles */
+       .contact-terminal {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 1px solid var(--primary-electric);
+           border-radius: 8px;
+           overflow: hidden;
+           position: relative;
+           margin-top: 2rem;
+       }
+       
+       .contact-terminal::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           height: 2px;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon), var(--primary-matrix));
+       }
+       
+       .contact-header {
+           background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+           padding: 12px 16px;
+           border-bottom: 1px solid var(--primary-electric);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+       
+       .contact-title {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.9rem;
+           font-weight: 700;
+           letter-spacing: 1px;
+       }
+       
+       .contact-status {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.75rem;
+           font-weight: 600;
+           background: rgba(57, 255, 20, 0.1);
+           padding: 2px 8px;
+           border-radius: 4px;
+           border: 1px solid var(--primary-matrix);
+       }
+       
+       .contact-content {
+           padding: 24px;
+       }
+       
+       .contact-message {
+           margin-bottom: 24px;
+           text-align: center;
+       }
+       
+       .message-line {
+           color: #e0e0e0;
+           font-size: 1.1rem;
+           margin-bottom: 8px;
+           font-family: 'Exo 2', sans-serif;
+       }
+       
+       .contact-channels {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+           gap: 16px;
+       }
+       
+       .channel-item {
+           background: rgba(0, 0, 0, 0.3);
+           border: 1px solid rgba(0, 212, 255, 0.2);
+           border-radius: 8px;
+           padding: 16px;
+           display: flex;
+           align-items: center;
+           gap: 12px;
+           transition: all 0.3s ease;
+       }
+       
+       .channel-item:hover {
+           border-color: var(--primary-electric);
+           background: rgba(0, 212, 255, 0.05);
+           transform: translateY(-2px);
+       }
+       
+       .channel-item.location {
+           cursor: default;
+       }
+       
+       .channel-icon {
+           font-size: 24px;
+           min-width: 32px;
+           text-align: center;
+       }
+       
+       .channel-info {
+           flex: 1;
+       }
+       
+       .channel-name {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.9rem;
+           font-weight: 700;
+           letter-spacing: 1px;
+           margin-bottom: 4px;
+       }
+       
+       .channel-desc {
+           color: #a0a0a0;
+           font-size: 0.8rem;
+           font-family: 'Exo 2', sans-serif;
+       }
+       
+       .channel-btn {
+           background: linear-gradient(45deg, var(--primary-electric), var(--primary-neon));
+           border: none;
+           border-radius: 6px;
+           padding: 8px 16px;
+           color: #000;
+           font-family: 'Orbitron', monospace;
+           font-weight: 700;
+           font-size: 0.75rem;
+           text-decoration: none;
+           display: flex;
+           align-items: center;
+           gap: 6px;
+           transition: all 0.3s ease;
+           letter-spacing: 1px;
+           min-width: 80px;
+           max-width: 120px;
+           justify-content: center;
+           white-space: nowrap;
+       }
+       
+       .channel-btn:hover {
+           transform: translateY(-1px);
+           box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+       }
+       
+       .btn-arrow {
+           font-size: 14px;
+       }
+       
+       .channel-status {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.75rem;
+           font-weight: 600;
+           background: rgba(57, 255, 20, 0.1);
+           padding: 4px 8px;
+           border-radius: 4px;
+           border: 1px solid var(--primary-matrix);
+       }
+       
+       /* Demo Terminal Styles */
+       .demos-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+           gap: 2rem;
+           margin-top: 2rem;
+       }
+       
+       .demo-terminal-card {
+           background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+           border: 1px solid var(--primary-electric);
+           border-radius: 8px;
+           overflow: hidden;
+           position: relative;
+       }
+       
+       .demo-terminal-card::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           height: 2px;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon), var(--primary-matrix));
+       }
+       
+       .demo-header {
+           background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+           padding: 12px 16px;
+           border-bottom: 1px solid var(--primary-electric);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+       
+       .demo-title {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.9rem;
+           font-weight: 700;
+           letter-spacing: 1px;
+       }
+       
+       .demo-status {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.75rem;
+           font-weight: 600;
+           background: rgba(57, 255, 20, 0.1);
+           padding: 2px 8px;
+           border-radius: 4px;
+           border: 1px solid var(--primary-matrix);
+       }
+       
+       .demo-content {
+           padding: 20px;
+       }
+       
+       .demo-description {
+           margin-bottom: 20px;
+       }
+       
+       .desc-line {
+           color: #e0e0e0;
+           font-size: 0.9rem;
+           margin-bottom: 4px;
+           font-family: 'Exo 2', sans-serif;
+       }
+       
+       .renderer-container {
+           margin-bottom: 20px;
+           border: 1px solid rgba(0, 212, 255, 0.3);
+           border-radius: 8px;
+           overflow: hidden;
+       }
+       
+       .renderer-header {
+           background: rgba(0, 0, 0, 0.5);
+           padding: 8px 12px;
+           border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+       
+       .renderer-label {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 600;
+       }
+       
+       .renderer-fps {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 600;
+       }
+       
+       .canvas-container {
+           height: 300px;
+           background: #000;
+           position: relative;
+       }
+       
+       .shader-controls {
+           border: 1px solid rgba(0, 212, 255, 0.3);
+           border-radius: 8px;
+           overflow: hidden;
+       }
+       
+       .controls-header {
+           background: rgba(0, 0, 0, 0.5);
+           padding: 8px 12px;
+           border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+       
+       .controls-label {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 600;
+       }
+       
+       .controls-count {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 600;
+       }
+       
+       .shader-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+           gap: 8px;
+           padding: 12px;
+           background: rgba(0, 0, 0, 0.3);
+       }
+       
+       .shader-preset {
+           background: rgba(0, 0, 0, 0.5);
+           border: 1px solid rgba(0, 212, 255, 0.2);
+           border-radius: 6px;
+           padding: 8px;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           display: flex;
+           flex-direction: column;
+           gap: 4px;
+       }
+       
+       .shader-preset:hover {
+           border-color: var(--primary-electric);
+           background: rgba(0, 212, 255, 0.1);
+           transform: translateY(-2px);
+       }
+       
+       .shader-name {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.7rem;
+           font-weight: 700;
+           letter-spacing: 0.5px;
+       }
+       
+       .shader-desc {
+           color: #a0a0a0;
+           font-size: 0.65rem;
+           font-family: 'Exo 2', sans-serif;
+       }
+       
+       .metrics-container {
+           display: flex;
+           flex-direction: column;
+           gap: 16px;
+       }
+       
+       .metric-item {
+           border: 1px solid rgba(0, 212, 255, 0.2);
+           border-radius: 6px;
+           padding: 12px;
+           background: rgba(0, 0, 0, 0.3);
+       }
+       
+       .metric-header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 8px;
+       }
+       
+       .metric-label {
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 600;
+           letter-spacing: 0.5px;
+       }
+       
+       .metric-value {
+           color: var(--primary-matrix);
+           font-family: 'Orbitron', monospace;
+           font-size: 0.8rem;
+           font-weight: 700;
+       }
+       
+       .metric-bar {
+           height: 8px;
+           background: rgba(0, 0, 0, 0.5);
+           border: 1px solid var(--primary-electric);
+           border-radius: 4px;
+           overflow: hidden;
+           position: relative;
+       }
+       
+       .metric-fill {
+           height: 100%;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon));
+           border-radius: 3px;
+           transition: width 0.3s ease;
+           position: relative;
+       }
+       
+       .metric-fill::after {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+           animation: progress-shine 2s infinite;
+       }
+
+       /* Image Carousel containers */
+       .carousel-container {
+           position: relative;
+           width: 100%;
+           height: 300px;
+           border-radius: 12px;
+           overflow: hidden;
+           border: 2px solid rgba(0,212,255,0.4);
+           background: var(--bg-card);
+           box-shadow: inset 0 0 20px rgba(0,212,255,0.1);
+       }
+       
+       .carousel-slides {
+           position: relative;
+           width: 100%;
+           height: 100%;
+           overflow: hidden;
+       }
+       
+       .carousel-slide {
+           position: absolute;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           opacity: 0;
+           transition: opacity 0.5s ease-in-out;
+           background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(255,0,119,0.1));
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           color: var(--primary-electric);
+           font-family: 'Orbitron', monospace;
+           font-size: 16px;
+           text-align: center;
+           overflow: hidden;
+       }
+       
+       .carousel-slide img {
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           border-radius: 10px;
+       }
+       
+       
+       .carousel-slide.active {
+           opacity: 1;
+       }
+       
+
+       /* Enhanced buttons */
+       .cyber-btn {
+           background: linear-gradient(45deg, var(--primary-electric), var(--primary-neon));
+           color: white;
+           border: none;
+           padding: 12px 24px;
+           border-radius: 8px;
+           font-weight: 600;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           text-transform: uppercase;
+           letter-spacing: 1px;
+           position: relative;
+           overflow: hidden;
+           box-shadow: 0 4px 15px rgba(0,212,255,0.3);
+       }
+
+       .cyber-btn::before {
+           content: '';
+           position: absolute;
+           top: 0;
+           left: -100%;
+           width: 100%;
+           height: 100%;
+           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+           transition: left 0.5s ease;
+       }
+
+       .cyber-btn:hover::before {
+           left: 100%;
+       }
+
+       .cyber-btn:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 8px 25px rgba(0,212,255,0.5);
+       }
+
+       /* Section headers */
+       .section-title {
+           font-size: 3rem;
+           font-weight: 700;
+           margin-bottom: 3rem;
+           position: relative;
+           display: inline-block;
+           font-family: 'Orbitron', monospace;
+       }
+
+       .section-title::after {
+           content: '';
+           position: absolute;
+           bottom: -8px;
+           left: 0;
+           width: 60%;
+           height: 3px;
+           background: linear-gradient(90deg, var(--primary-electric), var(--primary-neon), var(--primary-matrix));
+           border-radius: 2px;
+           box-shadow: 0 0 10px var(--primary-electric);
+       }
+
+
+
+
+
+
+
+       /* Mobile optimizations */
+       @media (max-width: 768px) {
+           .section-title { font-size: 2rem; }
+           .masonry { grid-template-columns: 1fr; }
+           .canvas-container { height: 250px; }
+       }
+
+       /* Custom scrollbar */
+       ::-webkit-scrollbar {
+           width: 8px;
+       }
+       ::-webkit-scrollbar-track {
+           background: var(--bg-darker);
+       }
+       ::-webkit-scrollbar-thumb {
+           background: linear-gradient(180deg, var(--primary-electric), var(--primary-neon));
+           border-radius: 4px;
+           box-shadow: 0 0 5px var(--primary-electric);
+       }
+   </style>
+</head>
+<body class="cyber-bg">
+   <!-- Navigation - Terminal Style -->
+   <nav class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b-2 border-green-500">
+       <div class="container mx-auto px-6 py-3">
+           <div class="flex items-center justify-between">
+               <div class="flex items-center space-x-4">
+                   <div class="terminal-prompt">root@portfolio:~$</div>
+                   <div class="nav-command">./daniel_pena.sh</div>
+               </div>
+               <div class="hidden md:flex space-x-6">
+                   <a href="#projects" class="nav-link" data-command="ls projects/">
+                       <span class="nav-icon">📁</span>
+                       <span class="nav-text">PROJECTS</span>
+                   </a>
+                   <a href="#demos" class="nav-link" data-command="./demos.sh">
+                       <span class="nav-icon">🎮</span>
+                       <span class="nav-text">DEMOS</span>
+                   </a>
+                   <a href="#skills" class="nav-link" data-command="cat skills.txt">
+                       <span class="nav-icon">⚡</span>
+                       <span class="nav-text">SKILLS</span>
+                   </a>
+                   <a href="#contact" class="nav-link" data-command="./contact.sh">
+                       <span class="nav-icon">📧</span>
+                       <span class="nav-text">CONTACT</span>
+                   </a>
+               </div>
+               <button class="md:hidden terminal-btn-mobile">
+                   <span class="btn-line"></span>
+                   <span class="btn-line"></span>
+                   <span class="btn-line"></span>
+               </button>
+           </div>
+       </div>
+   </nav>
+
+    <!-- Hero Section - Terminal Interface -->
+    <section class="min-h-screen relative overflow-hidden bg-black">
+        <!-- Matrix-style background -->
+        <div class="absolute inset-0 opacity-10">
+            <canvas id="matrix-canvas" class="w-full h-full"></canvas>
+        </div>
+        
+        <!-- Terminal Interface -->
+        <div class="relative z-10 min-h-screen flex items-center justify-center px-6">
+            <div class="terminal-window max-w-4xl w-full">
+                <!-- Terminal Header -->
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <div class="terminal-btn close"></div>
+                        <div class="terminal-btn minimize"></div>
+                        <div class="terminal-btn maximize"></div>
+                    </div>
+                    <div class="terminal-title">daniel@portfolio:~$</div>
+                </div>
+                
+                <!-- Terminal Content -->
+                <div class="terminal-content">
+                    <div class="terminal-line">
+                        <span class="prompt">daniel@portfolio:~$</span>
+                        <span class="command typing-text" data-text="whoami"></span>
+                    </div>
+                    <div class="terminal-output">
+                        <div class="output-line">Daniel Peña - Graphics Engineer</div>
+                        <div class="output-line">Specializing in real-time rendering and game engine development</div>
+                    </div>
+                    
+                    <div class="terminal-line">
+                        <span class="prompt">daniel@portfolio:~$</span>
+                        <span class="command typing-text" data-text="ls -la skills/"></span>
+                    </div>
+                    <div class="terminal-output">
+                        <div class="output-line">drwxr-xr-x 8 daniel daniel 4096 Dec 2024 skills/</div>
+                        <div class="skill-item">
+                            <span class="skill-name">Vulkan API</span>
+                            <span class="skill-level">██████████ 100%</span>
+                        </div>
+                        <div class="skill-item">
+                            <span class="skill-name">C++20</span>
+                            <span class="skill-level">██████████ 100%</span>
+                        </div>
+                        <div class="skill-item">
+                            <span class="skill-name">Unity</span>
+                            <span class="skill-level">█████████░ 92%</span>
+                        </div>
+                        <div class="skill-item">
+                            <span class="skill-name">Unreal Engine 5</span>
+                            <span class="skill-level">████████░░ 85%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-line">
+                        <span class="prompt">daniel@portfolio:~$</span>
+                        <span class="command typing-text" data-text="cat projects/README.md"></span>
+                    </div>
+                    <div class="terminal-output">
+                        <div class="output-line"># Portfolio Projects</div>
+                        <div class="output-line">• 3D Vulkan Engine - Custom graphics engine with advanced rendering</div>
+                        <div class="output-line">• 1.3 Engine - Modern Vulkan 1.3 implementation with ImGui</div>
+                        <div class="output-line">• Mixed Engine - Hybrid rendering pipeline</div>
+                        <div class="output-line">• VR FPS Game - Unity-based virtual reality shooter</div>
+                        <div class="output-line">• AI Tag Game - Unity game with intelligent NPCs</div>
+                    </div>
+                    
+                    <div class="terminal-line">
+                        <span class="prompt">daniel@portfolio:~$</span>
+                        <span class="command typing-text" data-text="./explore_portfolio.sh"></span>
+                    </div>
+                    <div class="terminal-output">
+                        <div class="output-line">Executing portfolio exploration...</div>
+                        <div class="output-line">Loading interactive demonstrations...</div>
+                        <div class="output-line">Ready for user interaction.</div>
+                    </div>
+                    
+                    <div class="terminal-line current-line">
+                        <span class="prompt">daniel@portfolio:~$</span>
+                        <span class="cursor-blink">_</span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="terminal-actions">
+                    <button onclick="document.getElementById('projects').scrollIntoView()" class="terminal-btn-action">
+                        <span class="btn-icon">▶</span>
+                        <span class="btn-text">EXECUTE PORTFOLIO</span>
+                    </button>
+                    <button onclick="document.getElementById('contact').scrollIntoView()" class="terminal-btn-action secondary">
+                        <span class="btn-icon">📧</span>
+                        <span class="btn-text">INITIATE CONTACT</span>
+           </button>
+                </div>
+            </div>
+       </div>
+   </section>
+
+   <main class="container mx-auto px-6 py-16">
+       <!-- Featured Projects - Terminal File System -->
+       <section id="projects" class="mb-32">
+           <div class="terminal-section">
+               <div class="terminal-header-small">
+                   <div class="terminal-buttons">
+                       <div class="terminal-btn close"></div>
+                       <div class="terminal-btn minimize"></div>
+                       <div class="terminal-btn maximize"></div>
+                   </div>
+                   <div class="terminal-title">daniel@portfolio:~/projects$</div>
+               </div>
+               <div class="terminal-content-small">
+                   <div class="terminal-line">
+                       <span class="prompt">daniel@portfolio:~/projects$</span>
+                       <span class="command">ls -la</span>
+                   </div>
+                   <div class="terminal-output">
+                       <div class="output-line">total 5</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 ./</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 ../</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 vulkan-engine/</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 1.3-engine/</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 mixed-engine/</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 vr-shooter/</div>
+                       <div class="output-line">drwxr-xr-x 1 daniel daniel 4096 Dec 2024 ai-tag-game/</div>
+                   </div>
+               </div>
+           </div>
+           <div class="masonry">
+               <!-- 1.3 Engine -->
+               <div class="project-card terminal-project-card p-8">
+                   <div class="carousel-container mb-6" id="13-engine-carousel">
+                       <div class="carousel-slides">
+                           <div class="carousel-slide active">
+                               <img src="images of projects/1.3/1.png" alt="1.3 Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/1.3/2.png" alt="1.3 Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/1.3/3.png" alt="1.3 Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/1.3/4.png" alt="1.3 Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/1.3/5.png" alt="1.3 Engine">
+                           </div>
+                       </div>
+                   </div>
+                   <h3 class="text-2xl font-bold mb-4 neon-green mono">1.3 ENGINE</h3>
+                   <p class="text-gray-300 mb-6">
+                       Modern Vulkan 1.3 graphics engine built with C++20 and LightweightVK wrapper. 
+                       Features component-based architecture, 10+ post-processing effects, cross-platform asset pipeline, and ImGui overlay for real-time debugging and controls.
+                   </p>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">Vulkan 1.3</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">C++20</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">LightweightVK</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">ECS</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">Post-Processing</span>
+                   </div>
+                   <div class="flex space-x-4">
+                       <button class="border border-cyan-500 text-cyan-400 px-6 py-2 rounded hover:bg-cyan-500/10 transition-colors">
+                           Source Code
+                       </button>
+                   </div>
+               </div>
+
+               <!-- Mixed Engine Project -->
+               <div class="project-card terminal-project-card p-8">
+                   <div class="carousel-container mb-6" id="mixed-engine-carousel">
+                       <div class="carousel-slides">
+                           <div class="carousel-slide active">
+                               <img src="images of projects/mixed/1.png" alt="Mixed Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/2.png" alt="Mixed Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/3.png" alt="Mixed Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/4.png" alt="Mixed Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/5.png" alt="Mixed Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/6.png" alt="Mixed Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/7.png" alt="Mixed Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/8.png" alt="Mixed Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/mixed/9.png" alt="Mixed Engine">
+                           </div>
+                       </div>
+                   </div>
+                   <h3 class="text-2xl font-bold mb-4 neon-green mono">MIXED ENGINE</h3>
+                   <p class="text-gray-300 mb-6">
+                       Sophisticated Vulkan-based 3D graphics engine in C++20 with component-based architecture. 
+                       Features PBR materials, multi-light system, cubemap skybox, and 14 distinct post-processing effects.
+                   </p>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">Vulkan</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">C++20</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">GLSL</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">PBR</span>
+                       <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">CMake</span>
+                   </div>
+                   <div class="flex space-x-4">
+                       <button class="border border-cyan-500 text-cyan-400 px-6 py-2 rounded hover:bg-cyan-500/10 transition-colors">
+                           Source Code
+                       </button>
+                   </div>
+               </div>
+
+               <!-- Three-Dimensional Vulkan Engine Project -->
+               <div class="project-card terminal-project-card p-8">
+                   <div class="carousel-container mb-6" id="vulkan-3d-carousel">
+                       <div class="carousel-slides">
+                           <div class="carousel-slide active">
+                               <img src="images of projects/capstone/1.png" alt="3D Vulkan Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/capstone/2.png" alt="3D Vulkan Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/capstone/3.png" alt="3D Vulkan Engine">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/capstone/4.png" alt="3D Vulkan Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/capstone/5.png" alt="3D Vulkan Engine">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/capstone/6.png" alt="3D Vulkan Engine">
+                           </div>
+                       </div>
+                   </div>
+                   <h3 class="text-2xl font-bold mb-4 neon-green mono">THREE-DIMENSIONAL VULKAN ENGINE</h3>
+                   <p class="text-gray-300 mb-6">
+                       3D engine using Vulkan API with GLSL shaders for high-performance graphics. 
+                       Features AI-driven NPCs with pathfinding, dynamic actor maps, and multiplayer support.
+                   </p>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                       <span class="px-3 py-1 bg-magenta-500/20 text-pink-400 rounded-full text-sm">Vulkan</span>
+                       <span class="px-3 py-1 bg-magenta-500/20 text-pink-400 rounded-full text-sm">GLSL</span>
+                       <span class="px-3 py-1 bg-magenta-500/20 text-pink-400 rounded-full text-sm">AI</span>
+                       <span class="px-3 py-1 bg-magenta-500/20 text-pink-400 rounded-full text-sm">Multiplayer</span>
+                   </div>
+                   <button class="border border-cyan-500 text-cyan-400 px-6 py-2 rounded hover:bg-cyan-500/10 transition-colors">
+                       Source Code
+                   </button>
+               </div>
+
+               <!-- Unity VRFPS Game -->
+               <div class="project-card terminal-project-card p-8">
+                   <div class="carousel-container mb-6" id="vr-fps-carousel">
+                       <div class="carousel-slides">
+                           <div class="carousel-slide active">
+                               <img src="images of projects/shooter/1.png" alt="Unity VR FPS Game">
+                               </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/shooter/2.png" alt="Unity VR FPS Game">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/shooter/3.png" alt="Unity VR FPS Game">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/shooter/4.png" alt="Unity VR FPS Game">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/shooter/5.png" alt="Unity VR FPS Game">
+                           </div>
+                       </div>
+                   </div>
+                   <h3 class="text-2xl font-bold mb-4 neon-green mono">UNITY VR FPS GAME</h3>
+                   <p class="text-gray-300 mb-6">
+                       VR first-person shooter using Unity Engine with optimized graphical performance. 
+                       Features high-quality real-time bullet shooting for three guns and realistic physics.
+                   </p>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                       <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">Unity VR</span>
+                       <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">C#</span>
+                       <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">Physics</span>
+                       <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">VR</span>
+                   </div>
+                   <button class="border border-cyan-500 text-cyan-400 px-6 py-2 rounded hover:bg-cyan-500/10 transition-colors">
+                       Source Code
+                   </button>
+               </div>
+
+               <!-- Unity Tag Game -->
+               <div class="project-card terminal-project-card p-8">
+                   <div class="carousel-container mb-6" id="tag-game-carousel">
+                       <div class="carousel-slides">
+                           <div class="carousel-slide active">
+                               <img src="images of projects/ai/1.png" alt="Unity Tag Game">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/ai/2.png" alt="Unity Tag Game">
+                           </div>
+                           <div class="carousel-slide">
+                               <img src="images of projects/ai/3.png" alt="Unity Tag Game">
+                           </div>
+                       </div>
+                   </div>
+                   <h3 class="text-2xl font-bold mb-4 neon-green mono">UNITY TAG GAME</h3>
+                   <p class="text-gray-300 mb-6">
+                       2D top-view PVE game using Unity Engine with maze-like levels. 
+                       Features Breadth First Search pathfinding algorithm and advanced visual effects.
+                   </p>
+                   <div class="flex flex-wrap gap-2 mb-6">
+                       <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">Unity</span>
+                       <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">C#</span>
+                       <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">2D</span>
+                       <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">AI</span>
+                   </div>
+                   <button class="border border-cyan-500 text-cyan-400 px-6 py-2 rounded hover:bg-cyan-500/10 transition-colors">
+                       Source Code
+                   </button>
+               </div>
+
+           </div>
+       </section>
+
+       <!-- Interactive Demos -->
+       <section id="demos" class="mb-32">
+           <div class="terminal-section">
+               <div class="terminal-header-small">
+                   <div class="terminal-buttons">
+                       <div class="terminal-btn close"></div>
+                       <div class="terminal-btn minimize"></div>
+                       <div class="terminal-btn maximize"></div>
+                   </div>
+                   <div class="terminal-title">daniel@portfolio:~/demos$</div>
+               </div>
+               <div class="terminal-content-small">
+                   <div class="terminal-line">
+                       <span class="prompt">daniel@portfolio:~/demos$</span>
+                       <span class="command">./launch_interactive_demos.sh</span>
+                   </div>
+                   <div class="terminal-output">
+                       <div class="output-line">=== INTERACTIVE DEMONSTRATIONS ===</div>
+                       <div class="output-line">Initializing WebGL context...</div>
+                       <div class="output-line">Loading shader programs...</div>
+                       <div class="output-line">Starting real-time rendering pipeline...</div>
+                       <div class="output-line">Ready for user interaction.</div>
+                   </div>
+               </div>
+           </div>
+           <div class="demos-grid">
+               <!-- WebGL Shader Editor -->
+               <div class="demo-terminal-card">
+                   <div class="demo-header">
+                       <span class="demo-title">SHADER_RENDERER</span>
+                       <span class="demo-status">ACTIVE</span>
+                   </div>
+                   <div class="demo-content">
+                       <div class="demo-description">
+                           <div class="desc-line">Real-time WebGL shader demonstration</div>
+                           <div class="desc-line">Interactive post-processing effects</div>
+                       </div>
+                       <div class="renderer-container">
+                           <div class="renderer-header">
+                               <span class="renderer-label">RENDER_OUTPUT</span>
+                               <span class="renderer-fps">FPS: --</span>
+                           </div>
+                           <div class="canvas-container" id="live-shader">
+                               <!-- Live shader editor -->
+                           </div>
+                       </div>
+                       <div class="shader-controls">
+                           <div class="controls-header">
+                               <span class="controls-label">SHADER_PRESETS</span>
+                               <span class="controls-count">10 EFFECTS</span>
+                           </div>
+                           <div class="shader-grid">
+                               <button class="shader-preset" data-shader="original">
+                                   <span class="shader-name">ORIGINAL</span>
+                                   <span class="shader-desc">No effects</span>
+                               </button>
+                               <button class="shader-preset" data-shader="crt-dynamic">
+                                   <span class="shader-name">CRT_DYNAMIC</span>
+                                   <span class="shader-desc">Retro monitor</span>
+                               </button>
+                               <button class="shader-preset" data-shader="grayscale">
+                                   <span class="shader-name">GRAYSCALE</span>
+                                   <span class="shader-desc">Monochrome</span>
+                               </button>
+                               <button class="shader-preset" data-shader="chromatic-aberration">
+                                   <span class="shader-name">CHROMATIC_AB</span>
+                                   <span class="shader-desc">Color separation</span>
+                               </button>
+                               <button class="shader-preset" data-shader="dream">
+                                   <span class="shader-name">DREAM</span>
+                                   <span class="shader-desc">Soft blur</span>
+                               </button>
+                               <button class="shader-preset" data-shader="glitch">
+                                   <span class="shader-name">GLITCH</span>
+                                   <span class="shader-desc">Digital noise</span>
+                               </button>
+                               <button class="shader-preset" data-shader="posterization">
+                                   <span class="shader-name">POSTERIZE</span>
+                                   <span class="shader-desc">Color reduction</span>
+                               </button>
+                               <button class="shader-preset" data-shader="underwater">
+                                   <span class="shader-name">UNDERWATER</span>
+                                   <span class="shader-desc">Caustic effect</span>
+                               </button>
+                               <button class="shader-preset" data-shader="pixelation">
+                                   <span class="shader-name">PIXELATE</span>
+                                   <span class="shader-desc">Low resolution</span>
+                               </button>
+                               <button class="shader-preset" data-shader="noise">
+                                   <span class="shader-name">NOISE</span>
+                                   <span class="shader-desc">Random pattern</span>
+                               </button>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Performance Metrics -->
+               <div class="demo-terminal-card">
+                   <div class="demo-header">
+                       <span class="demo-title">SYSTEM_MONITOR</span>
+                       <span class="demo-status">MONITORING</span>
+                   </div>
+                   <div class="demo-content">
+                       <div class="demo-description">
+                           <div class="desc-line">Real-time performance monitoring</div>
+                           <div class="desc-line">System resource utilization</div>
+                       </div>
+                       <div class="metrics-container">
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-label">SHADER_FPS</span>
+                                <span class="metric-value" id="shader-fps">-- FPS</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="shader-fps-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-label">RENDER_TIME</span>
+                                <span class="metric-value" id="render-time">-- ms</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="render-time-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-label">COMPLEXITY</span>
+                                <span class="metric-value" id="shader-complexity">LOW</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="complexity-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-header">
+                                <span class="metric-label">ACTIVE_SHADER</span>
+                                <span class="metric-value" id="active-shader">ORIGINAL</span>
+                            </div>
+                        </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </section>
+
+       <!-- Technical Skills -->
+       <section id="skills" class="mb-32">
+           <div class="terminal-section">
+               <div class="terminal-header-small">
+                   <div class="terminal-buttons">
+                       <div class="terminal-btn close"></div>
+                       <div class="terminal-btn minimize"></div>
+                       <div class="terminal-btn maximize"></div>
+                           </div>
+                   <div class="terminal-title">daniel@portfolio:~/skills$</div>
+                           </div>
+               <div class="terminal-content-small">
+                   <div class="terminal-line">
+                       <span class="prompt">daniel@portfolio:~/skills$</span>
+                       <span class="command">./system_diagnostics.sh</span>
+                       </div>
+                   <div class="terminal-output">
+                       <div class="output-line">=== SYSTEM DIAGNOSTICS REPORT ===</div>
+                       <div class="output-line">Scanning technical capabilities...</div>
+                       <div class="output-line">Analyzing proficiency levels...</div>
+                       <div class="output-line">Generating skill matrix...</div>
+                           </div>
+                           </div>
+                       </div>
+           <div class="skills-grid">
+               <div class="skill-terminal-card">
+                   <div class="skill-header">
+                       <span class="skill-category">GRAPHICS_APIS</span>
+                       <span class="skill-status">ACTIVE</span>
+                           </div>
+                   <div class="skill-content">
+                       <div class="skill-item">
+                           <div class="skill-name">Vulkan</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 95%"></div>
+                           </div>
+                               <span class="skill-percentage">95%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">OpenGL</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 90%"></div>
+                               </div>
+                               <span class="skill-percentage">90%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">GLSL</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 88%"></div>
+                               </div>
+                               <span class="skill-percentage">88%</span>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <div class="skill-terminal-card">
+                   <div class="skill-header">
+                       <span class="skill-category">GAME_ENGINES</span>
+                       <span class="skill-status">ACTIVE</span>
+                           </div>
+                   <div class="skill-content">
+                       <div class="skill-item">
+                           <div class="skill-name">Custom Engines</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 95%"></div>
+                               </div>
+                               <span class="skill-percentage">95%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">Unity</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 92%"></div>
+                           </div>
+                               <span class="skill-percentage">92%</span>
+                       </div>
+                           </div>
+                       <div class="skill-item">
+                           <div class="skill-name">Unreal Engine 5</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 85%"></div>
+                           </div>
+                               <span class="skill-percentage">85%</span>
+                       </div>
+                           </div>
+                   </div>
+               </div>
+
+               <div class="skill-terminal-card">
+                   <div class="skill-header">
+                       <span class="skill-category">PROGRAMMING</span>
+                       <span class="skill-status">ACTIVE</span>
+                   </div>
+                   <div class="skill-content">
+                       <div class="skill-item">
+                           <div class="skill-name">C++</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 95%"></div>
+                               </div>
+                               <span class="skill-percentage">95%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">C#</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 90%"></div>
+                               </div>
+                               <span class="skill-percentage">90%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">Java</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 80%"></div>
+                               </div>
+                               <span class="skill-percentage">80%</span>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <div class="skill-terminal-card">
+                   <div class="skill-header">
+                       <span class="skill-category">TOOLS_PLATFORMS</span>
+                       <span class="skill-status">ACTIVE</span>
+                   </div>
+                   <div class="skill-content">
+                       <div class="skill-item">
+                           <div class="skill-name">Blender</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 85%"></div>
+                               </div>
+                               <span class="skill-percentage">85%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">3ds Max</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 80%"></div>
+                               </div>
+                               <span class="skill-percentage">80%</span>
+                           </div>
+                       </div>
+                       <div class="skill-item">
+                           <div class="skill-name">CMake</div>
+                           <div class="skill-progress">
+                               <div class="progress-bar">
+                                   <div class="progress-fill" style="width: 85%"></div>
+                               </div>
+                               <span class="skill-percentage">85%</span>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </section>
+
+       <!-- Contact - Communication Protocol -->
+       <section id="contact" class="mb-16">
+           <div class="terminal-section">
+               <div class="terminal-header-small">
+                   <div class="terminal-buttons">
+                       <div class="terminal-btn close"></div>
+                       <div class="terminal-btn minimize"></div>
+                       <div class="terminal-btn maximize"></div>
+                   </div>
+                   <div class="terminal-title">daniel@portfolio:~/contact$</div>
+               </div>
+               <div class="terminal-content-small">
+                   <div class="terminal-line">
+                       <span class="prompt">daniel@portfolio:~/contact$</span>
+                       <span class="command">./initiate_communication.sh</span>
+                   </div>
+                   <div class="terminal-output">
+                       <div class="output-line">=== COMMUNICATION PROTOCOL INITIALIZED ===</div>
+                       <div class="output-line">Establishing secure connection...</div>
+                       <div class="output-line">Ready to receive transmission.</div>
+                   </div>
+               </div>
+           </div>
+           
+           <div class="contact-terminal">
+               <div class="contact-header">
+                   <span class="contact-title">COMMUNICATION_CHANNELS</span>
+                   <span class="contact-status">ONLINE</span>
+               </div>
+               <div class="contact-content">
+                   <div class="contact-message">
+                       <div class="message-line">Ready to collaborate on cutting-edge graphics projects?</div>
+                       <div class="message-line">Let's connect and build something extraordinary together.</div>
+                   </div>
+                   <div class="contact-channels">
+                       <div class="channel-item">
+                           <div class="channel-icon">📧</div>
+                           <div class="channel-info">
+                               <div class="channel-name">EMAIL</div>
+                               <div class="channel-desc">Primary communication protocol</div>
+                           </div>
+                           <a href="mailto:daniel-pf@hotmail.com" class="channel-btn">
+                               <span class="btn-text">SEND</span>
+                               <span class="btn-arrow">→</span>
+                           </a>
+                       </div>
+                       <div class="channel-item">
+                           <div class="channel-icon">💼</div>
+                           <div class="channel-info">
+                               <div class="channel-name">LINKEDIN</div>
+                               <div class="channel-desc">Professional network access</div>
+                           </div>
+                           <a href="https://linkedin.com/in/dfpena" class="channel-btn">
+                               <span class="btn-text">CONNECT</span>
+                               <span class="btn-arrow">→</span>
+                           </a>
+                       </div>
+                       <div class="channel-item">
+                           <div class="channel-icon">⚡</div>
+                           <div class="channel-info">
+                               <div class="channel-name">GITHUB</div>
+                               <div class="channel-desc">Code repository access</div>
+                           </div>
+                           <a href="https://github.com/danguard96" class="channel-btn">
+                               <span class="btn-text">VIEW_CODE</span>
+                               <span class="btn-arrow">→</span>
+                           </a>
+                       </div>
+                       <div class="channel-item location">
+                           <div class="channel-icon">📍</div>
+                           <div class="channel-info">
+                               <div class="channel-name">LOCATION</div>
+                               <div class="channel-desc">Toronto, Ontario, Canada</div>
+                           </div>
+                           <div class="channel-status">ONLINE</div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </section>
+   </main>
+
+
+   <script>
+       // Carousel functionality
+       window.changeSlide = function(carouselId, direction) {
+           const carousel = document.getElementById(carouselId);
+           if (!carousel) return;
+           
+           const slides = carousel.querySelectorAll('.carousel-slide');
+           const currentSlide = carousel.querySelector('.carousel-slide.active');
+           
+           if (!currentSlide) return;
+           
+           let currentIndex = Array.from(slides).indexOf(currentSlide);
+           let nextIndex = currentIndex + direction;
+           
+           // Wrap around
+           if (nextIndex >= slides.length) nextIndex = 0;
+           if (nextIndex < 0) nextIndex = slides.length - 1;
+           
+           // Update slides
+           currentSlide.classList.remove('active');
+           slides[nextIndex].classList.add('active');
+       }
+       
+       window.setSlide = function(carouselId, index) {
+           const carousel = document.getElementById(carouselId);
+           const slides = carousel.querySelectorAll('.carousel-slide');
+           
+           // Remove active from all
+           slides.forEach(slide => slide.classList.remove('active'));
+           
+           // Add active to selected
+           slides[index].classList.add('active');
+       }
+       
+       // Auto-advance carousels
+       function startCarouselAutoAdvance(carouselId, interval = 5000) {
+           const carousel = document.getElementById(carouselId);
+           if (!carousel) return;
+           
+           setInterval(() => {
+               changeSlide(carouselId, 1);
+           }, interval);
+       }
+
+       // Initialize carousels when page loads
+       document.addEventListener('DOMContentLoaded', function() {
+           // Start auto-advance for all carousels
+           setTimeout(() => {
+               startCarouselAutoAdvance('13-engine-carousel');
+               startCarouselAutoAdvance('mixed-engine-carousel');
+               startCarouselAutoAdvance('vulkan-3d-carousel');
+               startCarouselAutoAdvance('vr-fps-carousel');
+               startCarouselAutoAdvance('tag-game-carousel');
+           }, 500);
+       });
+
+       // Three.js Scene Setup for Live Demonstrations only
+       let scenes = {};
+       
+       function createScene(containerId, sceneType) {
+           const container = document.getElementById(containerId);
+           if (!container) return;
+
+           const scene = new THREE.Scene();
+           const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+           const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+           
+           renderer.setSize(container.clientWidth, container.clientHeight);
+           renderer.setClearColor(0x0a0a0f, 1);
+           renderer.shadowMap.enabled = true;
+           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+           
+           container.appendChild(renderer.domElement);
+
+           scenes[containerId] = { scene, camera, renderer, container };
+
+           // Create different demo scenes
+           switch(sceneType) {
+               case 'hero':
+                   createHeroScene(scenes[containerId]);
+                   break;
+               case 'live-shader':
+                   createLiveShaderDemo(scenes[containerId]);
+                   break;
+           }
+
+           return scenes[containerId];
+       }
+
+       function createHeroScene({ scene, camera, renderer }) {
+           // Create hero background scene
+           const particles = new THREE.Points(
+               new THREE.BufferGeometry(),
+               new THREE.PointsMaterial({ color: 0x00ffff, size: 0.05 })
+           );
+           
+           const positions = [];
+           for (let i = 0; i < 300; i++) { // Reduced from 1000 to 300 for memory optimization
+               positions.push(
+                   Math.random() * 20 - 10,
+                   Math.random() * 20 - 10,
+                   Math.random() * 20 - 10
+               );
+           }
+           
+           particles.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+           scene.add(particles);
+
+           camera.position.z = 5;
+
+           function animate() {
+               particles.rotation.y += 0.001;
+               renderer.render(scene, camera);
+               requestAnimationFrame(animate);
+           }
+           animate();
+       }
+
+       function createLiveShaderDemo({ scene, camera, renderer }) {
+           // Create a test image with sharp edges
+           const canvas = document.createElement('canvas');
+           canvas.width = 512;
+           canvas.height = 512;
+           const ctx = canvas.getContext('2d');
+           
+           // Clear background
+           ctx.fillStyle = '#1a1a2e';
+           ctx.fillRect(0, 0, 512, 512);
+           
+           // Create sharp geometric shapes
+           ctx.fillStyle = '#ff0077';
+           ctx.fillRect(50, 50, 150, 150);
+           
+           ctx.fillStyle = '#00ffff';
+           ctx.beginPath();
+           ctx.moveTo(256, 50);
+           ctx.lineTo(406, 200);
+           ctx.lineTo(256, 200);
+           ctx.closePath();
+           ctx.fill();
+           
+           ctx.fillStyle = '#00ff88';
+           ctx.beginPath();
+           ctx.arc(128, 350, 80, 0, Math.PI * 2);
+           ctx.fill();
+           
+           ctx.fillStyle = '#8b5cf6';
+           ctx.fillRect(300, 300, 150, 100);
+           
+           // Add sharp diagonal lines
+           ctx.strokeStyle = '#ffffff';
+           ctx.lineWidth = 8;
+           ctx.beginPath();
+           ctx.moveTo(0, 256);
+           ctx.lineTo(512, 256);
+           ctx.stroke();
+           
+           ctx.beginPath();
+           ctx.moveTo(256, 0);
+           ctx.lineTo(256, 512);
+           ctx.stroke();
+           
+           // Add some sharp text-like patterns
+           ctx.fillStyle = '#ffff00';
+           for(let i = 0; i < 5; i++) {
+               ctx.fillRect(100 + i * 60, 400, 40, 40);
+           }
+           
+           // Add sharp corner patterns
+           ctx.fillStyle = '#ff4500';
+           ctx.beginPath();
+           ctx.moveTo(400, 400);
+           ctx.lineTo(450, 400);
+           ctx.lineTo(450, 450);
+           ctx.lineTo(400, 450);
+           ctx.closePath();
+           ctx.fill();
+           
+           const texture = new THREE.CanvasTexture(canvas);
+           
+           // Create plane geometry
+           const geometry = new THREE.PlaneGeometry(4, 4);
+           
+           // Shader definitions
+           const shaders = {
+               original: {
+               vertexShader: `
+                   varying vec2 vUv;
+                   void main() {
+                       vUv = uv;
+                       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                   }
+               `,
+               fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                   varying vec2 vUv;
+                   
+                   void main() {
+                           gl_FragColor = texture2D(uTexture, vUv);
+                       }
+                   `
+               },
+               'crt-dynamic': {
+               vertexShader: `
+                   varying vec2 vUv;
+                   void main() {
+                       vUv = uv;
+                       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                   }
+               `,
+               fragmentShader: `
+                   uniform sampler2D uTexture;
+                   uniform float uTime;
+                   varying vec2 vUv;
+                   
+                   void main() {
+                       float x = floor(gl_FragCoord.x / 3.0);
+                       float y = floor(gl_FragCoord.y / 4.0);
+                       
+                       vec2 mod_uv = vUv;
+                       mod_uv.x = vUv.x + sin(gl_FragCoord.y + uTime) * 0.0006;
+                       
+                       vec4 color = texture2D(uTexture, mod_uv);
+                       
+                       color = mix(color * 1.5, color, 1.0 - (1.0 / (mod(gl_FragCoord.y * x - (uTime * 2.0), 256.0))));
+                       
+                       int i = int(mod(x, 4.0));
+                       vec4 colors[4] = vec4[4](
+                           vec4(1.0, 0.0, 0.0, 0.75),
+                           vec4(0.0, 1.0, 0.0, 0.75),
+                           vec4(0.0, 0.0, 1.0, 0.75),
+                           vec4(0.0, 0.0, 0.0, 0.5)
+                       );
+                       float factors[4] = float[4](0.97, 0.97, 0.97, 0.85);
+                       color = mix(colors[i], color, factors[i]);
+                       
+                       color = mix(color * 0.1, color, abs(sin(y + uTime)));
+                       
+                       gl_FragColor = color;
+                   }
+               `
+               },
+               grayscale: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       void main() {
+                           vec4 color = texture2D(uTexture, vUv);
+                           float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                           gl_FragColor = vec4(vec3(gray), color.a);
+                       }
+                   `
+               },
+               'chromatic-aberration': {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       void main() {
+                           float aberration = 0.005;
+                           vec3 col;
+                           col.r = texture2D(uTexture, vec2(vUv.x + aberration, vUv.y)).r;
+                           col.g = texture2D(uTexture, vUv).g;
+                           col.b = texture2D(uTexture, vec2(vUv.x - aberration, vUv.y)).b;
+                           gl_FragColor = vec4(col, 1.0);
+                       }
+                   `
+               },
+               dream: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       vec2 dreamWarp(vec2 uv) {
+                           vec2 center = vec2(0.5);
+                           vec2 toCenter = center - uv;
+                           float dist = length(toCenter);
+                           
+                           float pulseSpeed = 2.0;
+                           float pulseAmount = 0.02;
+                           float pulse = sin(uTime * pulseSpeed) * pulseAmount;
+                           
+                           float angle = atan(toCenter.y, toCenter.x);
+                           float spiralAmount = 0.1;
+                           float spiral = dist * spiralAmount;
+                           
+                           vec2 warped = uv + normalize(toCenter) * (pulse + spiral);
+                           warped.x += sin(warped.y * 10.0 + uTime * 3.0) * 0.02;
+                           warped.y += cos(warped.x * 8.0 + uTime * 2.0) * 0.02;
+                           
+                           return warped;
+                       }
+                       
+                       vec3 dreamColor(vec3 color) {
+                           vec3 highlight = vec3(0.7, 0.9, 1.0);
+                           color = mix(color, highlight, 0.2);
+                           
+                           float colorPulse = sin(uTime * 3.0) * 0.1 + 0.9;
+                           color *= colorPulse;
+                           
+                           float rainbow = sin(uTime * 2.0);
+                           vec3 rainbowTint = vec3(
+                               sin(rainbow + 0.0) * 0.1 + 0.9,
+                               sin(rainbow + 2.0) * 0.1 + 0.9,
+                               sin(rainbow + 4.0) * 0.1 + 0.9
+                           );
+                           color *= rainbowTint;
+                           
+                           return color;
+                       }
+                       
+                       void main() {
+                           vec2 warped = dreamWarp(vUv);
+                           vec3 color = texture2D(uTexture, warped).rgb;
+                           color = dreamColor(color);
+                           
+                           vec2 vignetteUV = vUv * 2.0 - 1.0;
+                           float vignette = 1.0 - dot(vignetteUV, vignetteUV) * 0.3;
+                           color *= vignette;
+                           
+                           gl_FragColor = vec4(color, 1.0);
+                       }
+                   `
+               },
+               glitch: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       float rand(vec2 co) {
+                           return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+                       }
+                       
+                       vec3 rgbSplitGlitch(vec2 uv) {
+                           float offset = (rand(vec2(uTime, uv.y)) - 0.5) * 0.05;
+                           vec3 col;
+                           col.r = texture2D(uTexture, vec2(uv.x + offset, uv.y)).r;
+                           col.g = texture2D(uTexture, vec2(uv.x, uv.y)).g;
+                           col.b = texture2D(uTexture, vec2(uv.x - offset, uv.y)).b;
+                           return col;
+                       }
+                       
+                       vec2 blockGlitch(vec2 uv) {
+                           float block = floor(uv.y * 10.0);
+                           float noise = rand(vec2(block, uTime));
+                           if (noise > 0.95) {
+                               uv.x += (noise - 0.95) * 2.0;
+                           }
+                           return uv;
+                       }
+                       
+                       void main() {
+                           vec2 glitchUV = blockGlitch(vUv);
+                           vec3 color = rgbSplitGlitch(glitchUV);
+                           
+                           if (rand(vec2(uTime, glitchUV.x)) > 0.99) {
+                               color = vec3(1.0) - color;
+                           }
+                           
+                           gl_FragColor = vec4(color, 1.0);
+                       }
+                   `
+               },
+               posterization: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       void main() {
+                           vec4 color = texture2D(uTexture, vUv);
+                           
+                           vec4 colors[5] = vec4[5](
+                               vec4(0.035, 0.043, 0.043, 1.0),
+                               vec4(0.271, 0.373, 0.337, 1.0),
+                               vec4(0.4, 0.639, 0.451, 1.0),
+                               vec4(0.773, 0.929, 0.675, 1.0),
+                               vec4(0.859, 0.996, 0.722, 1.0)
+                           );
+                           
+                           int index = int(floor((((color.x + color.y + color.z) / 3.0) + 0.5) * 5.0));
+                           color = colors[index];
+                           
+                           gl_FragColor = color;
+                       }
+                   `
+               },
+               underwater: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       void main() {
+                           vec2 mod_uv = vUv;
+                           mod_uv.y = mod_uv.y + sin(((2.0 * uTime) + (gl_FragCoord.x / 8.0))) * 0.002;
+                           
+                           vec4 color = texture2D(uTexture, mod_uv);
+                           vec4 waterColor = vec4(0.0, 0.56, 0.88, 1.0);
+                           float waterIntensity = 0.2;
+                           
+                           color = mix(color, waterColor, waterIntensity);
+                           
+                           vec2 movingUV = vUv + vec2(uTime * 0.01, uTime * 0.005);
+                           vec2 sparkleGrid = floor(movingUV * vec2(40.0, 16.0));
+                           float sparkleSeed = dot(sparkleGrid, vec2(12.9898, 78.233));
+                           float sparkleTime = fract(uTime * 0.05 + sparkleSeed * 0.1);
+                           
+                           if (sparkleTime > 0.85 && sparkleTime < 0.9) {
+                               vec2 sparklePos = fract(movingUV * vec2(40.0, 16.0));
+                               vec2 normalizedPos = sparklePos * vec2(1.0, 40.0/16.0);
+                               float sparkleDist = distance(normalizedPos, vec2(0.5, 0.5 * 40.0/16.0));
+                               float sparkleIntensity = (1.0 - sparkleDist * 2.0) * (sparkleTime - 0.85) * 5.0;
+                               sparkleIntensity = max(0.0, sparkleIntensity);
+                               color.rgb += vec3(sparkleIntensity * 0.5);
+                           }
+                           
+                           gl_FragColor = color;
+                       }
+                   `
+               },
+               pixelation: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       void main() {
+                           float pixelation = 140.0;
+                           vec2 pixels = vec2(pixelation);
+                           vec2 pixelated = floor(vUv * pixels) / pixels;
+                           vec4 color = texture2D(uTexture, pixelated);
+                           gl_FragColor = color;
+                       }
+                   `
+               },
+               noise: {
+                   vertexShader: `
+                       varying vec2 vUv;
+                       void main() {
+                           vUv = uv;
+                           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                       }
+                   `,
+                   fragmentShader: `
+                       uniform sampler2D uTexture;
+                       uniform float uTime;
+                       varying vec2 vUv;
+                       
+                       float noise(vec2 co) {
+                           return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+                       }
+                       
+                       void main() {
+                           vec4 color = texture2D(uTexture, vUv);
+                           vec4 fogColor = vec4(1.0);
+                           
+                           float noiseScale = 0.5;
+                           float noiseScale2 = 1.0;
+                           float noiseSpeed = 0.24;
+                           float noiseSpeed2 = 0.06;
+                           
+                           vec2 noiseUV = mod(vUv * noiseScale + vec2(uTime * noiseSpeed, uTime * noiseSpeed * 0.7), 1.0);
+                           vec2 noiseUV2 = mod(vUv * noiseScale2 + vec2(uTime * noiseSpeed2, uTime * noiseSpeed2 * 0.7), 1.0);
+                           
+                           float noise1 = noise(noiseUV);
+                           float noise2 = noise(noiseUV2);
+                           
+                           vec4 color1 = mix(color, fogColor, noise1 > noise2 ? 1.0 - (1.5 * noise1) : (1.0 - (1.5 * noise1)) / 2.0);
+                           vec4 color2 = mix(color, fogColor, noise2 > noise1 ? 1.0 - noise2 : noise2);
+                           
+                           color = (color1 + color2) / 2.0;
+                           gl_FragColor = color;
+                       }
+                   `
+               }
+           };
+           
+           // Create material with original shader
+           let currentShader = 'original';
+           const material = new THREE.ShaderMaterial({
+               uniforms: {
+                   uTexture: { value: texture },
+                   uTime: { value: 0 }
+               },
+               vertexShader: shaders.original.vertexShader,
+               fragmentShader: shaders.original.fragmentShader
+           });
+           
+           const plane = new THREE.Mesh(geometry, material);
+           scene.add(plane);
+
+           camera.position.z = 3;
+           
+           // Store references for shader switching
+           window.shaderDemo = {
+               material: material,
+               shaders: shaders,
+               currentShader: currentShader,
+               renderer: renderer,
+               scene: scene,
+               camera: camera
+           };
+
+           // Start the animation loop
+           startShaderAnimation();
+       }
+
+       // Global animation loop for shader demo
+       let animationId = null;
+       
+       function startShaderAnimation() {
+           if (animationId) {
+               cancelAnimationFrame(animationId);
+           }
+           
+           function animate() {
+               if (window.shaderDemo && window.shaderDemo.material) {
+                   window.shaderDemo.material.uniforms.uTime.value += 0.05;
+                   window.shaderDemo.renderer.render(window.shaderDemo.scene, window.shaderDemo.camera);
+                   
+                   // Update performance metrics
+                   updateShaderPerformanceMetrics();
+               }
+               
+               animationId = requestAnimationFrame(animate);
+           }
+           
+           animate();
+       }
+
+       // Shader performance monitoring
+       let shaderPerformanceData = {
+           frameCount: 0,
+           lastTime: performance.now(),
+           shaderFps: 0,
+           renderTime: 0,
+           currentShader: 'original',
+           shaderComplexity: {
+               'original': { complexity: 1, name: 'LOW' },
+               'crt-dynamic': { complexity: 8, name: 'HIGH' },
+               'grayscale': { complexity: 2, name: 'LOW' },
+               'chromatic-aberration': { complexity: 6, name: 'MEDIUM' },
+               'dream': { complexity: 7, name: 'HIGH' },
+               'glitch': { complexity: 9, name: 'VERY HIGH' },
+               'posterization': { complexity: 3, name: 'LOW' },
+               'underwater': { complexity: 5, name: 'MEDIUM' },
+               'pixelation': { complexity: 4, name: 'MEDIUM' },
+               'noise': { complexity: 6, name: 'MEDIUM' }
+           }
+       };
+
+       function updateShaderPerformanceMetrics() {
+           const currentTime = performance.now();
+           const deltaTime = currentTime - shaderPerformanceData.lastTime;
+           
+           shaderPerformanceData.frameCount++;
+           shaderPerformanceData.renderTime = deltaTime;
+           shaderPerformanceData.shaderFps = Math.round(1000 / deltaTime);
+           
+               // Update shader FPS display
+               const shaderFpsElement = document.getElementById('shader-fps');
+               const shaderFpsBar = document.getElementById('shader-fps-bar');
+               if (shaderFpsElement && shaderFpsBar) {
+                   shaderFpsElement.textContent = `${shaderPerformanceData.shaderFps} FPS`;
+                   const fpsPercentage = Math.min((shaderPerformanceData.shaderFps / 60) * 100, 100);
+                   shaderFpsBar.style.width = `${fpsPercentage}%`;
+
+                   // Change color based on shader performance
+                   if (shaderPerformanceData.shaderFps >= 50) {
+                       shaderFpsBar.className = 'metric-fill';
+                       shaderFpsBar.style.background = 'linear-gradient(90deg, var(--primary-matrix), var(--primary-electric))';
+                   } else if (shaderPerformanceData.shaderFps >= 30) {
+                       shaderFpsBar.className = 'metric-fill';
+                       shaderFpsBar.style.background = 'linear-gradient(90deg, var(--primary-neon), var(--primary-electric))';
+                   } else {
+                       shaderFpsBar.className = 'metric-fill';
+                       shaderFpsBar.style.background = 'linear-gradient(90deg, #ff4444, var(--primary-neon))';
+                   }
+               }
+           
+               // Update render time display
+               const renderTimeElement = document.getElementById('render-time');
+               const renderTimeBar = document.getElementById('render-time-bar');
+               if (renderTimeElement && renderTimeBar) {
+                   renderTimeElement.textContent = `${shaderPerformanceData.renderTime.toFixed(1)} ms`;
+                   const renderTimePercentage = Math.min((shaderPerformanceData.renderTime / 16.67) * 100, 100);
+                   renderTimeBar.style.width = `${renderTimePercentage}%`;
+
+                   // Change color based on render time
+                   if (shaderPerformanceData.renderTime <= 16.67) {
+                       renderTimeBar.className = 'metric-fill';
+                       renderTimeBar.style.background = 'linear-gradient(90deg, var(--primary-matrix), var(--primary-electric))';
+                   } else if (shaderPerformanceData.renderTime <= 33.33) {
+                       renderTimeBar.className = 'metric-fill';
+                       renderTimeBar.style.background = 'linear-gradient(90deg, var(--primary-neon), var(--primary-electric))';
+                   } else {
+                       renderTimeBar.className = 'metric-fill';
+                       renderTimeBar.style.background = 'linear-gradient(90deg, #ff4444, var(--primary-neon))';
+                   }
+               }
+           
+               // Update shader complexity display
+               const complexityElement = document.getElementById('shader-complexity');
+               const complexityBar = document.getElementById('complexity-bar');
+               if (complexityElement && complexityBar) {
+                   const currentComplexity = shaderPerformanceData.shaderComplexity[shaderPerformanceData.currentShader];
+                   complexityElement.textContent = currentComplexity.name;
+                   const complexityPercentage = (currentComplexity.complexity / 10) * 100;
+                   complexityBar.style.width = `${complexityPercentage}%`;
+
+                   // Change color based on complexity
+                   if (currentComplexity.complexity <= 3) {
+                       complexityBar.className = 'metric-fill';
+                       complexityBar.style.background = 'linear-gradient(90deg, var(--primary-matrix), var(--primary-electric))';
+                   } else if (currentComplexity.complexity <= 6) {
+                       complexityBar.className = 'metric-fill';
+                       complexityBar.style.background = 'linear-gradient(90deg, var(--primary-neon), var(--primary-electric))';
+                   } else {
+                       complexityBar.className = 'metric-fill';
+                       complexityBar.style.background = 'linear-gradient(90deg, #ff4444, var(--primary-neon))';
+                   }
+               }
+           
+           shaderPerformanceData.lastTime = currentTime;
+       }
+
+       // Shader switching functionality
+       function switchShader(shaderName) {
+           if (!window.shaderDemo || !window.shaderDemo.shaders[shaderName]) {
+               return;
+           }
+           
+           const { material, shaders } = window.shaderDemo;
+           const shader = shaders[shaderName];
+           
+           // Update shader code
+           material.vertexShader = shader.vertexShader;
+           material.fragmentShader = shader.fragmentShader;
+           material.needsUpdate = true;
+           
+           // Update current shader reference
+           window.shaderDemo.currentShader = shaderName;
+           
+           // Update shader performance tracking
+           shaderPerformanceData.currentShader = shaderName;
+           
+           // Restart animation to ensure continuous performance monitoring
+           startShaderAnimation();
+           
+           // Update active shader display
+           const activeShaderElement = document.getElementById('active-shader');
+           if (activeShaderElement) {
+               activeShaderElement.textContent = shaderName.charAt(0).toUpperCase() + shaderName.slice(1).replace('-', ' ');
+           }
+           
+           // Update button states
+           document.querySelectorAll('.shader-preset').forEach(btn => {
+               btn.style.borderColor = 'rgba(0, 212, 255, 0.2)';
+               btn.style.background = 'rgba(0, 0, 0, 0.5)';
+           });
+           
+           const activeBtn = document.querySelector(`[data-shader="${shaderName}"]`);
+           if (activeBtn) {
+               activeBtn.style.borderColor = 'var(--primary-electric)';
+               activeBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+           }
+       }
+
+       // Matrix Background Animation (Optimized)
+       function initMatrixBackground() {
+           const canvas = document.getElementById('matrix-canvas');
+           if (!canvas) return;
+           
+           const ctx = canvas.getContext('2d');
+           // Reduce canvas size to save memory
+           canvas.width = Math.min(window.innerWidth, 1200);
+           canvas.height = Math.min(window.innerHeight, 800);
+           
+           const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+           const matrixArray = matrix.split("");
+           
+           const font_size = 12; // Slightly larger to reduce columns
+           const columns = Math.floor(canvas.width / font_size);
+           
+           const drops = [];
+           for (let x = 0; x < columns; x++) {
+               drops[x] = Math.floor(Math.random() * canvas.height / font_size);
+           }
+           
+           let animationId;
+           function drawMatrix() {
+               ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; // Faster fade
+               ctx.fillRect(0, 0, canvas.width, canvas.height);
+               
+               ctx.fillStyle = '#0F4';
+               ctx.font = font_size + 'px arial';
+               
+               // Process only every other column to reduce load
+               for (let i = 0; i < drops.length; i += 2) {
+                   const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                   ctx.fillText(text, i * font_size, drops[i] * font_size);
+                   
+                   if (drops[i] * font_size > canvas.height && Math.random() > 0.98) {
+                       drops[i] = 0;
+                   }
+                   drops[i]++;
+               }
+               
+               animationId = requestAnimationFrame(drawMatrix);
+           }
+           
+           // Use requestAnimationFrame instead of setInterval for better performance
+           drawMatrix();
+           
+           // Cleanup function
+           window.addEventListener('beforeunload', () => {
+               if (animationId) {
+                   cancelAnimationFrame(animationId);
+               }
+           });
+           
+           window.addEventListener('resize', () => {
+               canvas.width = Math.min(window.innerWidth, 1200);
+               canvas.height = Math.min(window.innerHeight, 800);
+           });
+       }
+       
+       // Terminal Typing Animation
+       function initTerminalAnimations() {
+           const typingElements = document.querySelectorAll('.typing-text');
+           let currentElement = 0;
+           
+           function typeNextElement() {
+               if (currentElement < typingElements.length) {
+                   const element = typingElements[currentElement];
+                   const text = element.getAttribute('data-text');
+                   element.textContent = '';
+                   element.style.width = '0';
+                   
+                   let i = 0;
+                   const typeInterval = setInterval(() => {
+                       if (i < text.length) {
+                           element.textContent += text.charAt(i);
+                           i++;
+                       } else {
+                           clearInterval(typeInterval);
+                           setTimeout(() => {
+                               currentElement++;
+                               typeNextElement();
+                           }, 1000);
+                       }
+                   }, 100);
+               }
+           }
+           
+           setTimeout(typeNextElement, 1000);
+       }
+
+       // Initialize Live Demonstrations scenes when page loads
+       document.addEventListener('DOMContentLoaded', function() {
+           initMatrixBackground();
+           initTerminalAnimations();
+           
+           if (typeof THREE !== 'undefined') {
+               createScene('hero-canvas', 'hero');
+               createScene('live-shader', 'live-shader');
+               
+               // Add shader button event listeners
+               setTimeout(() => {
+                   document.querySelectorAll('.shader-preset').forEach(btn => {
+                       btn.addEventListener('click', function() {
+                           const shaderName = this.getAttribute('data-shader');
+                           switchShader(shaderName);
+                       });
+                   });
+               }, 1000);
+           }
+       });
+
+       // Handle window resize
+       window.addEventListener('resize', function() {
+           Object.values(scenes).forEach(({ scene, camera, renderer, container }) => {
+               camera.aspect = container.clientWidth / container.clientHeight;
+               camera.updateProjectionMatrix();
+               renderer.setSize(container.clientWidth, container.clientHeight);
+           });
+       });
+   </script>
+</body>
+</html>
